@@ -1,0 +1,53 @@
+name: Deploy Worker
+
+permissions:
+  contents: read
+
+env:
+  SHOW_DEPLOYMENT_URL: false # change to true to show deployment URL
+  WRANGLER_QUIET: true # change to false to show wrangler logs
+  WRANGLER_VERSION: '4.36.0'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wrangler types
+        run: npm run wrangler-types
+
+      - name: Vite build
+        run: npm run vite-build
+
+      - name: Build & Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        id: deploy
+        with:
+          wranglerVersion: ${{ env.WRANGLER_VERSION }}
+          quiet: ${{ env.WRANGLER_QUIET }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Show deployment URL
+        if: env.SHOW_DEPLOYMENT_URL == 'true'
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          echo "::notice title=URL::Worker deployed at: ${{ steps.deploy.outputs.deployment-url }}"

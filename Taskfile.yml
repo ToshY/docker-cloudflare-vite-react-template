@@ -1,0 +1,119 @@
+version: '3'
+
+env:
+  UID:
+    sh: id -u
+  GID:
+    sh: id -g
+  TTY: ''
+  HOST_PORT: 8789
+  HOST_PREVIEW_PORT: 4175
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  # Setup
+  setup:
+    desc: Setup dev environment
+    cmds:
+      - task: init
+      - task: npm:install
+      - task: up
+
+  init:
+    desc: Initialise dev dotenv
+    silent: true
+    cmds:
+      - |
+        if [ ! -f ./.env.dev ]; then
+            cp .env.dev.example ./.env.dev
+        fi
+
+  # Docker
+  up:
+    desc: Start dev
+    silent: true
+    vars:
+      CONTAINER: '{{.c | default "worker"}}'
+    cmds:
+      - docker compose up worker -d --build --remove-orphans
+      - printf "Visit \033[32;4m%s\033[0m to use your application\n" "http://localhost:$HOST_PORT"
+
+  up:preview:
+    desc: Start preview
+    silent: true
+    cmds:
+      - docker compose up preview -d --build --remove-orphans
+      - printf "Visit \033[32;4m%s\033[0m to use your application\n" "http://localhost:$HOST_PREVIEW_PORT"
+
+  down:
+    desc: Stop dev environment
+    silent: true
+    cmds:
+      - docker compose down {{.CLI_ARGS | default "--remove-orphans"}}
+
+  logs:
+    desc: Show logs
+    cmds:
+      - docker compose logs -ft
+
+  # Vite
+  vite:build:
+    desc: Build Vite
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run vite-build
+
+  vite:preview:
+    desc: Build Vite for preview
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run vite-preview
+
+  # Worker
+  npm:install:
+    desc: Install dependencies
+    silent: true
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm install {{.CLI_ARGS}}
+
+  npm:update:
+    desc: Update dependencies
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm update
+
+  # QA tools
+  biome:format:fix:
+    desc: Format code fix
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run biome-format-fix
+
+  biome:lint:fix:
+    desc: Lint code fix
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run biome-lint-fix
+
+  biome:check:fix:
+    desc: Check code fix
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run biome-check-fix
+
+  # Wrangler
+  wrangler:types:
+    desc: Wrangler types
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run wrangler-types
+
+  wrangler:deploy:
+    desc: Deploy the Worker to Cloudflare
+    vars:
+      APP_ENV: 'production'
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npm run wrangler-deploy -- --var APP_ENV:{{.APP_ENV}}
+
+  wrangler:secret:
+    desc: Set secret
+    vars:
+      SECRET: '{{.s}}'
+    cmds:
+      - docker compose run $TTY --rm --remove-orphans worker npx wrangler secret put {{.SECRET}}
