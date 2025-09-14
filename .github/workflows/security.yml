@@ -10,7 +10,8 @@ on:
 
 jobs:
   scan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v5
@@ -19,7 +20,6 @@ jobs:
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: "fs"
-          output: trivy-report.json
-          format: json
           scan-ref: .
-          exit-code: 0
+          format: "table"
+          exit-code: 1
