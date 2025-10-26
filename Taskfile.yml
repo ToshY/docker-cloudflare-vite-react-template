@@ -83,6 +83,11 @@ tasks:
       - docker compose run $TTY --rm --remove-orphans worker npm update
 
   # QA tools
+  precommit:install:
+    desc: Run precommit
+    cmds:
+      - pre-commit install
+
   biome:format:fix:
     desc: Format code fix
     cmds:

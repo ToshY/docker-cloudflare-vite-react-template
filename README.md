@@ -166,6 +166,17 @@ task biome:check:fix
 	- The action uses `cloudflare/wrangler-action@v3` but has the `wranglerVersion` explicitly set to match the version in the `package.json` (v4).
 	- By default, the [`release.yml`](.github/workflows/release.yml) has `WRANGLER_QUIET` set to `true` and `SHOW_DEPLOYMENT_URL` set to `false`, which will hide the deployment URL from the logs.
 
+## 🛠️ Contribute
+
+### Requirements
+
+* ☑️ [Pre-commit](https://pre-commit.com/#installation).
+* 📋 [Task (optional)](https://taskfile.dev/installation/)
+
+### Usage
+
+Run `pre-commit install` or `task precommit:install` to install the pre-commit hooks.
+
 ## ❕ Licence
 
 This repository comes with a [MIT license](./LICENSE).
