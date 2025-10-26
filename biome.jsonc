@@ -1,12 +1,16 @@
 {
 	"files": {
-		"includes": ["**", "!**/.wrangler", "!worker-configuration.d.ts"]
+		"includes": [
+			"**",
+			"!dist/**",
+			"!**/.wrangler",
+			"!worker-configuration.d.ts"
+		]
 	},
 	"formatter": { "enabled": true },
 	"linter": {
 		"enabled": true,
-		"rules": { "recommended": false },
-		"includes": ["**", "!dist"]
+		"rules": { "recommended": false }
 	},
 	"overrides": [
 		{
